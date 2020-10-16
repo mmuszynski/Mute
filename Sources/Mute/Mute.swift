@@ -68,29 +68,18 @@ public class Mute: NSObject {
 
     /// Library bundle
     private static var bundle: Bundle {
-        if let path = Bundle(for: Mute.self).path(forResource: "Mute", ofType: "bundle"),
-           let bundle = Bundle(path: path) {
-            return bundle
-        }
-
-        let spmBundleName = "Mute_Mute"
-
-        let candidates = [
-            // Bundle should be present here when the package is linked into an App.
-            Bundle.main.resourceURL,
-
-            // Bundle should be present here when the package is linked into a framework.
-            Bundle(for: Mute.self).resourceURL
-        ]
-
-        for candidate in candidates {
-            let bundlePath = candidate?.appendingPathComponent(spmBundleName + ".bundle")
-            if let bundle = bundlePath.flatMap(Bundle.init(url:)) {
-                return bundle
-            }
-        }
-
-        fatalError("Mute.bundle not found")
+        let muteBundle: Bundle
+        #if SWIFT_PACKAGE
+        muteBundle = Bundle.module
+        #else
+        muteBundle = Bundle(for: Self.self)
+        #endif
+        
+        guard let bundlePath = muteBundle.path(forResource: "Mute", ofType: "bundle"),
+              let bundle = Bundle(path: bundlePath)
+        else { fatalError("Mute.bundle not found") }
+        
+        return bundle
     }
 
     /// Mute sound url path

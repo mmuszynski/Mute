@@ -6,5 +6,5 @@ let package = Package(
     name: "Mute",
     platforms: [.iOS(.v9)],
     products: [.library(name: "Mute", targets: ["Mute"])],
-    targets: [.target(name: "Mute", path: "Mute", resources: [.copy("Assets/mute.aiff")])]
+    targets: [.target(name: "Mute", resources: [.process("Resources/mute.aiff")])]
 )
