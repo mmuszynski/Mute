@@ -19,10 +19,10 @@ This library is a Swift variant of https://github.com/moshegottlieb/SoundSwitch.
 
   s.ios.deployment_target = '9.0'
 
-  s.source_files = 'Mute/Classes/**/*'
+  s.source_files = 'Sources/Mute/**/*'
 
   s.resource_bundles = {
-    'Mute' => ['Mute/Assets/*.aiff']
+    'Mute' => ['Sources/Mute/Resources/*.aiff']
   }
   s.frameworks = 'Foundation', 'AudioToolbox'
   s.swift_version = '5.0'
