@@ -14,6 +14,15 @@ public class Mute: NSObject {
 
     public typealias MuteNotificationCompletion = ((_ mute: Bool) -> Void)
 
+    /// A state describing the position of the mute switch
+    ///
+    /// Created because the asynchronous versions are able to return a value, and that value may be more descriptive than the Boolean `isMute`
+    public enum MuteState {
+        case muted
+        case notMuted
+        case unknown
+    }
+    
     // MARK: Properties
 
     /// Shared instance
@@ -33,8 +42,15 @@ public class Mute: NSObject {
     /// Currently playing? used when returning from the background (if went to background and foreground really quickly)
     public private(set) var isPlaying = false
 
+    /// Current mute state as a `MuteState`
+    public private(set) var switchState: MuteState = .unknown
+    
     /// Current mute state
+    @available(*, unavailable, renamed: "isMuted")
     public private(set) var isMute = false
+    
+    /// Returns true if the current state is `muted` and false if the current state is `notMuted` or `unknown`
+    public var isMuted: Bool { return switchState == .muted }
 
     /// Sound is scheduled
     private var isScheduled = false
@@ -199,12 +215,47 @@ public class Mute: NSObject {
         let elapsed = Date.timeIntervalSinceReferenceDate - self.interval
         let isMute = elapsed < 0.1
 
-        if self.isMute != isMute || self.alwaysNotify {
-            self.isMute = isMute
+        if self.isMuted != isMute || self.alwaysNotify {
+            self.switchState = isMute ? .muted : .notMuted
             DispatchQueue.main.async {
                 self.notify?(isMute)
             }
         }
         self.schedulePlaySound()
+    }
+    
+    
+    /*
+    ====================
+    Async/Await versions
+    ====================
+    */
+    
+    @available(iOS 13.0.0, *)
+    @MainActor
+    /// Checks for the position of the mute switch asynchronously
+    public func checkMuteAsynchronously() async -> MuteState {
+        return await self.playSoundAsynchronously()
+    }
+    
+    @available(iOS 13.0.0, *)
+    private func playSoundAsynchronously() async -> MuteState {
+        return await withCheckedContinuation { continuation in
+            if !self.isPaused && !self.isPlaying {
+                self.interval = Date.timeIntervalSinceReferenceDate
+                self.isPlaying = true
+                
+                AudioServicesPlaySystemSoundWithCompletion(self.soundId) {
+                    self.isPlaying = false
+
+                    let elapsed = Date.timeIntervalSinceReferenceDate - self.interval
+                    let isMute = elapsed < 0.1
+
+                    if self.isMuted != isMute || self.alwaysNotify {
+                        continuation.resume(returning: isMute ? .muted : .notMuted)
+                    }
+                }
+            }
+        }
     }
 }
