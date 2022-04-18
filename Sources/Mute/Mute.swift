@@ -122,7 +122,6 @@ public class Mute: NSObject {
                                      UInt32(MemoryLayout.size(ofValue: yes)),
                                      &yes)
 
-            self.schedulePlaySound()
         } else {
             print("Failed to setup sound player")
             self.soundId = 0
@@ -210,7 +209,6 @@ public class Mute: NSObject {
                 self.notify?(isMute)
             }
         }
-        self.schedulePlaySound()
     }
     
     
