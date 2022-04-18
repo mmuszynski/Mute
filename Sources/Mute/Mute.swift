@@ -56,7 +56,7 @@ public class Mute: NSObject {
     private var isScheduled = false
 
     /// State of detection - paused when in background
-    public var isPaused = false {
+    public var isPaused = true {
         didSet {
             if !self.isPaused && oldValue && !self.isPlaying {
                 self.schedulePlaySound()
